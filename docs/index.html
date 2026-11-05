@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleaning & Preparing Raw Data for ML — India Road Accidents</title>
+<style>
+  :root{
+    --ink:#12181f; --muted:#5b6773; --line:#e3e8ee; --bg:#f6f8fa; --card:#fff;
+    --a:#0f766e; --a2:#14b8a6; --warn:#b45309; --bad:#b91c1c; --code:#0f172a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px 90px}
+  header{background:linear-gradient(140deg,#0b3b3a 0%,#0f766e 55%,#14b8a6 100%);color:#fff;padding:52px 0 44px;margin-bottom:34px}
+  header .wrap{padding-bottom:0}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11.5px;font-weight:700;opacity:.85}
+  h1{font-size:2.15rem;line-height:1.18;margin:12px 0 12px;font-weight:800;letter-spacing:-.7px}
+  header p{font-size:1.03rem;opacity:.94;margin:0;max-width:660px}
+  .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.25)}
+  .stat b{display:block;font-size:1.35rem;line-height:1.1}
+  .stat span{font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;opacity:.82}
+  h2{font-size:1.42rem;margin:44px 0 6px;letter-spacing:-.3px;font-weight:800}
+  h2 .num{display:inline-flex;align-items:center;justify-content:center;width:31px;height:31px;border-radius:9px;
+          background:var(--a);color:#fff;font-size:.92rem;margin-right:11px;vertical-align:2px}
+  h3{font-size:1.03rem;margin:24px 0 6px;font-weight:700}
+  p{margin:11px 0}
+  .lead{color:var(--muted);font-size:1.02rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px 22px;margin:16px 0;
+        box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .card h4{margin:0 0 8px;font-size:.95rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  code{background:#eef2f6;padding:1.5px 5px;border-radius:4px;font-size:.87em;
+       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre{background:var(--code);color:#e2e8f0;padding:16px 18px;border-radius:11px;overflow-x:auto;margin:14px 0;
+      font-size:12.7px;line-height:1.62}
+  pre code{background:none;padding:0;color:inherit;font-size:1em}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;
+       background:#e6fffb;color:#0f766e;border:1px solid #b2f5ea;margin-right:6px}
+  .tip,.warn,.bad{border-radius:11px;padding:14px 17px;margin:16px 0;font-size:.94rem;border-left:4px solid}
+  .tip{background:#ecfdf5;border-color:var(--a)}
+  .warn{background:#fffbeb;border-color:var(--warn)}
+  .bad{background:#fef2f2;border-color:var(--bad)}
+  .tip b,.warn b,.bad b{display:block;margin-bottom:3px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.89rem;background:#fff;
+        border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th{background:#f0f4f8;text-align:left;padding:9px 12px;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+  .ok{color:var(--a);font-weight:700}.no{color:var(--bad);font-weight:700}.mid{color:var(--warn);font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}h1{font-size:1.7rem}}
+  ul,ol{margin:11px 0;padding-left:22px}li{margin:5px 0}
+  .files{display:grid;gap:10px;margin-top:14px}
+  .file{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+        border-radius:10px;padding:12px 14px}
+  .file .ico{width:30px;height:30px;flex:0 0 30px;border-radius:7px;display:grid;place-items:center;
+             font-size:13px;font-weight:800;color:#fff;background:#0f766e}
+  .file .ico.py{background:#1e40af}.file .ico.csv{background:#166534}.file .ico.ipynb{background:#b45309}
+  .file b{display:block;font-size:.92rem}
+  .file span{font-size:.85rem;color:var(--muted)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .flow div{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 13px;font-size:.84rem;font-weight:600}
+  .flow div span{color:var(--a);margin-right:5px}
+  footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:1px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Hands-on ML data prep · lab guide</div>
+    <h1>Cleaning &amp; Preparing Raw Data for Machine Learning</h1>
+    <p>A five-step walkthrough on Indian road-accident data (2005–2023), with a runnable notebook, a deliberately
+       filthy CSV to practise on, and the traps that silently ruin models.</p>
+    <div class="stats">
+      <div class="stat"><b>10,465</b><span>rows in the raw file</span></div>
+      <div class="stat"><b>4,80,583</b><span>accidents in 2023 (MoRTH)</span></div>
+      <div class="stat"><b>19 yrs</b><span>2005 → 2023</span></div>
+      <div class="stat"><b>5 steps</b><span>profile → outliers</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="tip">
+  <b>The one rule that governs everything below</b>
+  Learn every cleaning statistic — imputer means, scaler ranges, encoder categories, outlier fences — from the
+  <strong>training set only</strong>. Fit on train, transform test. Break this and your notebook score stops describing
+  reality.
+</div>
+
+<div class="flow">
+  <div><span>1</span>Profile</div><div><span>2</span>Missing</div><div><span>3</span>Encode</div>
+  <div><span>4</span>Scale</div><div><span>5</span>Outliers</div><div><span>→</span>Pipeline</div>
+</div>
+
+<h2><span class="num">1</span>Import and profile</h2>
+<p class="lead">You cannot fix what you cannot see. Five calls give you the whole picture.</p>
+<pre><code>import pandas as pd
+df = pd.read_csv("data/india_road_accidents_raw.csv")
+
+df.shape          # (10465, 14)  — rows, columns
+df.info()         # dtype + non-null count per column  ← the single most useful call
+df.dtypes         # which columns are numbers, which are text
+df.describe()     # min / max / quartiles — catches impossible values instantly
+df.nunique()      # 60 "states"? India has 28 states + 8 UTs. Something is wrong.
+df.duplicated().sum()   # 205 rows downloaded twice</code></pre>
+
+<div class="card">
+  <h4>What the profile actually reveals</h4>
+  <table>
+    <tr><th>Column</th><th>dtype</th><th>Verdict</th></tr>
+    <tr><td><code>accidents</code>, <code>deaths</code>, <code>injuries</code></td><td>object</td><td class="no">Numbers trapped in text</td></tr>
+    <tr><td><code>speed_limit_kmph</code></td><td>object</td><td class="no">Max is 999 — a sentinel code</td></tr>
+    <tr><td><code>state</code></td><td>object</td><td class="mid">60 variants for 30 places (case + whitespace)</td></tr>
+    <tr><td><code>vehicle_type</code></td><td>object</td><td class="mid">8 spellings for 6 vehicles</td></tr>
+    <tr><td><code>severity</code></td><td>object</td><td class="ok">Clean — good candidate target</td></tr>
+  </table>
+</div>
+
+<div class="warn">
+  <b><code>object</code> dtype is the alarm bell</b>
+  <code>df["accidents"].mean()</code> raises a <code>TypeError</code>, and worse, <code>.sum()</code> on a text column
+  <em>silently concatenates</em> strings into a 300-digit monster. Any model fed this column learns garbage — or nothing.
+</div>
+
+<h2><span class="num">2</span>Handle missing values</h2>
+<p class="lead">Imputation is the last step. Normalising the <em>vocabulary</em> of missingness comes first.</p>
+
+<h3>2a. One representation of "missing"</h3>
+<pre><code>df = df.replace(["NA","N/A","","Unknown","null","-","nan"], np.nan)</code></pre>
+<p>This file uses six different tokens for the same idea. Skip this line and <code>"-"</code> becomes a legitimate
+category — you will ship a model with a feature called <em>dash</em>.</p>
+
+<h3>2b. Which statistic for which column?</h3>
+<table>
+  <tr><th>Strategy</th><th>Use when</th><th>Watch out</th></tr>
+  <tr><td><b>Drop rows</b></td><td>&lt;5% missing, at random; or the target itself is missing</td><td>Biases the sample if missingness is not random</td></tr>
+  <tr><td><b>Mean</b></td><td>Symmetric numeric column</td><td>Shifts under skew; shrinks variance</td></tr>
+  <tr><td><b>Median</b> ✓</td><td>Skewed numeric column (accident counts)</td><td>Still invents a spike at one value</td></tr>
+  <tr><td><b>Mode</b> / "Unknown"</td><td>Categorical columns</td><td>Over-represents the majority class</td></tr>
+  <tr><td><b>Group-wise median</b> ✓✓</td><td>A related column predicts the missing one</td><td>Needs a sensible grouping key</td></tr>
+  <tr><td><b>KNN / MICE</b></td><td>Many correlated features, time to spare</td><td>Slow; leaks if fitted outside the pipeline</td></tr>
+</table>
+
+<div class="card">
+  <h4>Why median, not mean, in this dataset</h4>
+  <table>
+    <tr><th>Column</th><th>Mean</th><th>Median</th><th>Gap</th><th>Skew</th></tr>
+    <tr><td>accidents</td><td>867</td><td>351</td><td>+147%</td><td>4.56</td></tr>
+    <tr><td>deaths</td><td>256</td><td>102</td><td>+151%</td><td>4.21</td></tr>
+    <tr><td>driver_age_median</td><td>42.5</td><td>36.9</td><td>+15%</td><td>13.2</td></tr>
+  </table>
+  <p style="margin-bottom:0">When the mean sits 2–3× above the median, the distribution has a long right tail.
+  Filling with the mean drags every missing row toward a handful of enormous states.</p>
+</div>
+
+<h3>2c. Group-wise imputation — the same code, far less damage</h3>
+<pre><code># one global median: wrong, because a truck driver and a biker are different populations
+df["driver_age_median"].fillna(df["driver_age_median"].median())
+
+# median of each vehicle's own group: right
+df["driver_age_median"] = df.groupby("vehicle_type")["driver_age_median"] \
+                            .transform(lambda s: s.fillna(s.median()))</code></pre>
+<p>In this lab that group-by exposes a bug: it produced <strong>8</strong> groups for <strong>6</strong> vehicle
+types, because <code>Two-wheeler</code> and <code>two wheeler</code> were imputed separately. Lesson —
+<em>tidy categories before you impute, not after</em>.</p>
+
+<div class="bad">
+  <b>The silent leak</b>
+  Using the median of the <em>whole dataset</em> means the test set helped choose the fill value. At prediction time
+  you will not have the test set. Always impute inside a <code>Pipeline</code>.
+</div>
+
+<h2><span class="num">3</span>Encode categorical features</h2>
+<table>
+  <tr><th>Encoding</th><th>Output</th><th>Use for</th></tr>
+  <tr><td><b>One-hot</b> ✓</td><td>0/1 column per category</td><td>Nominal: <code>road_type</code>, <code>weather</code>, <code>vehicle_type</code></td></tr>
+  <tr><td><b>Ordinal</b> ✓</td><td>One integer, explicit order</td><td>Ordered: Minor&nbsp;&lt;&nbsp;Serious&nbsp;&lt;&nbsp;Fatal</td></tr>
+  <tr><td><b>Label</b></td><td>One integer, arbitrary order</td><td>Trees only, or very high cardinality</td></tr>
+  <tr><td><b>Target / mean</b></td><td>Category → mean of target</td><td>High cardinality, computed inside CV only</td></tr>
+</table>
+
+<pre><code># ordered → explicit mapping (never LabelEncoder: it would sort alphabetically)
+SEVERITY = {"Minor": 0, "Serious": 1, "Fatal": 2}
+df["severity_code"] = df["severity"].map(SEVERITY)
+
+# unordered → one-hot; drop_first kills the collinear dummy
+df = pd.get_dummies(df, columns=["road_type","weather","vehicle_type"],
+                    drop_first=True, dtype=int)</code></pre>
+
+<div class="warn">
+  <b>Why <code>drop_first=True</code></b>
+  Keep all three dummies for a 3-level feature and <code>NH + SH + Other = 1</code> always. Perfectly collinear
+  columns make linear coefficients uninterpretable and can destabilise the fit. Trees don't care.
+</div>
+
+<p><b>30 states ≠ 29 dummy columns.</b> One-hot <code>state</code> and you add 29 mostly-empty columns — the curse of
+dimensionality on a 10k-row dataset. Label-encode it for tree models; target-encode it for linear ones, computed
+inside cross-validation.</p>
+
+<div class="tip">
+  <b>Fix spellings before encoding, or encoding multiplies the damage</b>
+  <code>"Two-wheeler"</code> and <code>"two wheeler"</code> became two dummy columns, each trained on half the
+  evidence. The fix is a lookup table (<code>CANONICAL</code> map), not cleverer regex.
+</div>
+
+<h2><span class="num">4</span>Normalise / standardise</h2>
+<table>
+  <tr><th>Scaler</th><th>Formula</th><th>Output</th><th>When</th></tr>
+  <tr><td><b>StandardScaler</b></td><td>(x−μ)/σ</td><td>μ=0, σ=1</td><td>Default for linear, SVM, kNN, PCA, NN</td></tr>
+  <tr><td><b>MinMaxScaler</b></td><td>(x−min)/(max−min)</td><td>[0, 1]</td><td>Bounded input needed</td></tr>
+  <tr><td><b>RobustScaler</b></td><td>(x−median)/IQR</td><td>unbounded</td><td>Outliers present</td></tr>
+  <tr><td><b>log1p</b></td><td>log(1+x)</td><td>unbounded</td><td>Heavy right skew — fixes shape, not just scale</td></tr>
+</table>
+
+<pre><code>print(df["accidents"].skew())        # 4.56  → badly right-skewed
+print(np.log1p(df["accidents"]).skew())  # 0.01  → symmetric</code></pre>
+
+<div class="card">
+  <h4>Two facts that separate juniors from practitioners</h4>
+  <ul style="margin-bottom:0">
+    <li><b>Tree models don't need scaling.</b> They split on thresholds, and thresholds survive any monotone
+        transform. In the lab, Random Forest scores 0.644 and Logistic Regression 0.640 — scaling bought no accuracy.
+        It buys a <em>correct optimiser</em>.</li>
+    <li><b>Scaling exists because distances are unit-blind.</b> With a raw feature on a 1–6 scale next to one in the
+        thousands, the second dominates every Euclidean distance. After standardising, both get a fair say.</li>
+  </ul>
+</div>
+
+<h2><span class="num">5</span>Visualise outliers, then decide</h2>
+
+<pre><code># What a boxplot draws:
+#   whiskers  = Q1 - 1.5·IQR  and  Q3 + 1.5·IQR
+#   box       = Q1 .. Q3 (the middle 50%)
+#   points    = "outliers" beyond the whiskers</code></pre>
+
+<table>
+  <tr><th>Column</th><th>IQR upper fence</th><th>Rows flagged</th><th>Verdict</th></tr>
+  <tr><td>accidents</td><td>2,186</td><td>9.8%</td><td class="mid">Real — large states</td></tr>
+  <tr><td>deaths</td><td>665</td><td>9.8%</td><td class="mid">Real — large states</td></tr>
+  <tr><td>injuries</td><td>2,101</td><td>10.3%</td><td class="mid">Real — large states</td></tr>
+  <tr><td>speed_limit_kmph</td><td>145</td><td>3.2%</td><td class="bad">Mix of 999 codes and 250 kmph typos</td></tr>
+  <tr><td>driver_age_median</td><td>64</td><td>1.6%</td><td class="bad">Ages of −1 and 999</td></tr>
+</table>
+
+<p>Read the two kinds of column separately. In <code>speed_limit_kmph</code> the fence (145) does catch the
+<strong>999</strong> codes and the 250 kmph typos — 330 rows — because they sit far outside a sane range. But in the
+count columns the same rule flags <strong>10% of perfectly valid rows</strong>: those are the big states, not errors.
+A boxplot shows you the <em>shape</em>; only domain knowledge and a valid-range check tell you what is
+<em>wrong</em>.</p>
+
+<div class="bad">
+  <b>The most expensive mistake in this notebook</b>
+  An outlier is not automatically an error. Deleting every row above Q3+1.5·IQR from accident counts deletes
+  Tamil Nadu, Madhya Pradesh and Uttar Pradesh — the three states your road-safety study is <em>about</em>.
+</div>
+
+<h3>Delete what is impossible, clip what is merely extreme</h3>
+<pre><code># IMPOSSIBLE → delete the row (domain rules, not statistics)
+VALID = {"speed_limit_kmph": (20, 120), "driver_age_median": (16, 80),
+         "vehicles_involved": (1, 12)}
+for col,(lo,hi) in VALID.items():
+    df = df[df[col].between(lo, hi)]        # dropped 594 rows (5.8%)
+
+# EXTREME BUT REAL → clip at the 1st/99th percentile (winsorise); no rows lost
+for col in ["accidents","deaths","injuries"]:
+    lo, hi = df[col].quantile([0.01, 0.99])
+    df[col] = df[col].clip(lo, hi).round()</code></pre>
+
+<h2>Put it together — the leak-free pipeline</h2>
+<pre><code>from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+
+preprocess = ColumnTransformer([
+    ("num", Pipeline([("impute", SimpleImputer(strategy="median")),
+                      ("scale",  StandardScaler())]), FEATURES_NUM),
+    ("cat", Pipeline([("impute", SimpleImputer(strategy="most_frequent")),
+                      ("encode", OneHotEncoder(handle_unknown="ignore",
+                                               drop="first"))]), FEATURES_CAT),
+])
+
+model = Pipeline([("prep", preprocess), ("clf", LogisticRegression(max_iter=1000))])
+model.fit(X_train, y_train)   # every median, scale and category learned here — from train only
+model.predict(X_test)         # ...and merely applied here</code></pre>
+
+<div class="tip">
+  <b>Bonus: the pipeline is now cross-validatable</b>
+  <code>cross_val_score(model, X, y, cv=5)</code> refits the imputer, scaler and encoder inside each fold for you.
+  Hand-cleaned dataframes cannot make that guarantee — which is exactly why production code is written this way.
+</div>
+
+<h2>Your files</h2>
+<div class="files">
+  <div class="file"><div class="ico ipynb">N</div>
+    <div><b>clean_and_prepare.ipynb</b><span>The lesson: 66 cells, executed, with every boxplot, histogram and comparison table rendered. Start here.</span></div></div>
+  <div class="file"><div class="ico csv">C</div>
+    <div><b>data/india_road_accidents_raw.csv</b><span>The messy input — 10,465 rows, 6 fake NA tokens, numbers-as-text, 205 duplicates, 999 sentinels.</span></div></div>
+  <div class="file"><div class="ico csv">C</div>
+    <div><b>data/india_road_accidents_clean.csv</b><span>The output you should reproduce yourself: 9,666 rows, 19 columns, zero missing values.</span></div></div>
+  <div class="file"><div class="ico py">P</div>
+    <div><b>scripts/01_make_dataset.py</b><span>How the dataset was generated and corrupted — yearly totals reconcile exactly to the official MoRTH series.</span></div></div>
+  <div class="file"><div class="ico py">P</div>
+    <div><b>scripts/02_build_notebook.py</b><span>Builds the notebook programmatically, so you can edit the lesson and re-run it.</span></div></div>
+  <div class="file"><div class="ico">H</div>
+    <div><b>exports/clean_and_prepare.html</b><span>Static read-only version of the notebook, for sharing.</span></div></div>
+</div>
+
+<h2>Your practice drill</h2>
+<ol>
+  <li>Delete the two Step-2 cells that do global imputation and rebuild them inside the pipeline. Confirm accuracy barely moves while the leakage is gone.</li>
+  <li>Add <code>state</code> as a label-encoded feature. Does it help a Random Forest? Does it help a Logistic Regression?</li>
+  <li>Swap the median imputer for <code>KNNImputer(n_neighbors=5)</code> and compare the resulting distributions.</li>
+  <li>Change the winsorising percentiles from 1/99 to 5/95 and re-read the boxplots. Where does real signal start disappearing?</li>
+  <li>Replace the target with <code>Fatal vs not</code> and report precision/recall instead of accuracy. Why is that a better framing for road safety?</li>
+</ol>
+
+<footer>
+  National totals in this dataset (accidents, deaths, injuries, 2005–2023) are the published MoRTH / NCRB
+  “Road Accidents in India” figures — 4,80,583 accidents, 1,72,890 deaths and 4,62,825 injuries in 2023.
+  Row-level detail (state × year × road type × vehicle type, weather, cause, severity) is a realistic
+  reconstruction created for teaching, and deliberately corrupted so there is something to clean.
+  Use it to learn the process; use the official MoRTH and data.gov.in releases for real analysis.
+</footer>
+
+</div>
+<div style="position:fixed;top:0;right:0;z-index:99;display:flex;gap:1px;
+background:#0f766e;border-bottom-left-radius:9px;overflow:hidden;font:600 12px/1 -apple-system,Segoe UI,Roboto,sans-serif">
+<a href="index.html" style="color:#0b3b3a;text-decoration:none;padding:9px 13px;background:#a7f3d0">Walkthrough</a>
+<a href="run_report.html" style="color:#fff;text-decoration:none;padding:9px 13px;background:#0b5f59">Results</a>
+<a href="notebook.html" style="color:#fff;text-decoration:none;padding:9px 13px">Notebook</a>
+</div>
+</body>
+</html>

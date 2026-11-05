@@ -1,0 +1,354 @@
+{
+  "step1": {
+    "rows": 10465,
+    "cols": 14,
+    "duplicates": 205,
+    "textly_numeric": [
+      "accidents",
+      "deaths",
+      "injuries",
+      "speed_limit_kmph",
+      "driver_age_median"
+    ],
+    "n_unique_before": {
+      "state": 60,
+      "road_type": 6,
+      "vehicle_type": 8,
+      "weather": 10
+    },
+    "describe_before": {
+      "accidents": {
+        "count": 10302.0,
+        "mean": 838.51,
+        "std": 1467.41,
+        "min": 5.0,
+        "25%": 120.0,
+        "50%": 341.5,
+        "75%": 898.0,
+        "max": 22120.0
+      },
+      "deaths": {
+        "count": 10416.0,
+        "mean": 249.46,
+        "std": 414.92,
+        "min": 2.0,
+        "25%": 35.0,
+        "50%": 101.0,
+        "75%": 283.0,
+        "max": 5788.0
+      },
+      "injuries": {
+        "count": 9961.0,
+        "mean": 883.39,
+        "std": 1527.34,
+        "min": 6.0,
+        "25%": 125.0,
+        "50%": 362.0,
+        "75%": 973.0,
+        "max": 27387.0
+      },
+      "vehicles_involved": {
+        "count": 10049.0,
+        "mean": 3.23,
+        "std": 2.83,
+        "min": 1.0,
+        "25%": 2.0,
+        "50%": 3.0,
+        "75%": 4.0,
+        "max": 31.0
+      },
+      "speed_limit_kmph": {
+        "count": 9669.0,
+        "mean": 102.15,
+        "std": 137.77,
+        "min": 50.0,
+        "25%": 70.0,
+        "50%": 80.0,
+        "75%": 100.0,
+        "max": 999.0
+      },
+      "driver_age_median": {
+        "count": 9470.0,
+        "mean": 42.35,
+        "std": 69.42,
+        "min": -1.0,
+        "25%": 30.15,
+        "50%": 36.9,
+        "75%": 44.0,
+        "max": 999.0
+      }
+    }
+  },
+  "step2_missing_pct": {
+    "accident_cause": 11.23,
+    "driver_age_median": 9.51,
+    "weather": 9.3,
+    "speed_limit_kmph": 7.61,
+    "alcohol_involved": 6.92,
+    "injuries": 4.82,
+    "vehicles_involved": 3.98
+  },
+  "fig_missing": "output/figs/step2_missing.png",
+  "step2_stats": {
+    "mean": {
+      "accidents": 867.21,
+      "deaths": 256.24,
+      "injuries": 885.48,
+      "vehicles_involved": 3.23,
+      "speed_limit_kmph": 102.23,
+      "driver_age_median": 42.45
+    },
+    "median": {
+      "accidents": 351.0,
+      "deaths": 102.0,
+      "injuries": 362.0,
+      "vehicles_involved": 3.0,
+      "speed_limit_kmph": 80.0,
+      "driver_age_median": 36.9
+    },
+    "skew": {
+      "accidents": 4.56,
+      "deaths": 4.21,
+      "injuries": 5.07,
+      "vehicles_involved": 6.14,
+      "speed_limit_kmph": 6.17,
+      "driver_age_median": 13.16
+    },
+    "gap_%": {
+      "accidents": 147.1,
+      "deaths": 151.2,
+      "injuries": 144.6,
+      "vehicles_involved": 7.6,
+      "speed_limit_kmph": 27.8,
+      "driver_age_median": 15.1
+    }
+  },
+  "fig_impute": "output/figs/step2_imputation_methods.png",
+  "step2_remaining_missing": 0,
+  "step2_rows_after": 10260,
+  "step2_rows_dropped": 205,
+  "fig_categories": "output/figs/step3_categories.png",
+  "step3": {
+    "raw_variants": {
+      "state": 60,
+      "road_type": 6,
+      "vehicle_type": 8,
+      "weather": 8,
+      "accident_cause": 6
+    },
+    "clean_variants": {
+      "state": 30,
+      "road_type": 3,
+      "vehicle_type": 6,
+      "weather": 4,
+      "accident_cause": 6
+    },
+    "columns_after_encoding": 27,
+    "dummy_columns": [
+      "road_type_Other Roads",
+      "road_type_State Highway",
+      "weather_Foggy",
+      "weather_Hazy / Dusty",
+      "weather_Rainy",
+      "vehicle_type_Bus",
+      "vehicle_type_Car / Taxi / Van",
+      "vehicle_type_Pedestrian / Cyclist",
+      "vehicle_type_Truck / Lorry",
+      "vehicle_type_Two-Wheeler",
+      "accident_cause_Mobile Phone Use",
+      "accident_cause_Other",
+      "accident_cause_Overspeeding",
+      "accident_cause_Red Light Jumping",
+      "accident_cause_Wrong Side / Lane Indiscipline",
+      "alcohol_involved_Yes"
+    ],
+    "severity_map": {
+      "Minor": 0,
+      "Serious": 1,
+      "Fatal": 2
+    }
+  },
+  "fig_scaling": "output/figs/step4_scaling.png",
+  "step4": {
+    "raw_distance": 16604.0,
+    "scaled_distance": 11.18,
+    "skew_before": 4.56,
+    "skew_after_log": 0.01,
+    "ranges": {
+      "min": {
+        "accidents": 5.0,
+        "deaths": 2.0,
+        "injuries": 6.0,
+        "vehicles_involved": 1.0,
+        "speed_limit_kmph": 50.0,
+        "driver_age_median": -1.0,
+        "year": 2005.0
+      },
+      "max": {
+        "accidents": 22120.0,
+        "deaths": 5788.0,
+        "injuries": 27387.0,
+        "vehicles_involved": 31.0,
+        "speed_limit_kmph": 999.0,
+        "driver_age_median": 999.0,
+        "year": 2023.0
+      },
+      "span": {
+        "accidents": 22115.0,
+        "deaths": 5786.0,
+        "injuries": 27381.0,
+        "vehicles_involved": 30.0,
+        "speed_limit_kmph": 949.0,
+        "driver_age_median": 1000.0,
+        "year": 18.0
+      }
+    },
+    "scaled_columns": [
+      "accidents_scaled",
+      "deaths_scaled",
+      "injuries_scaled",
+      "vehicles_involved_scaled",
+      "speed_limit_kmph_scaled",
+      "driver_age_median_scaled",
+      "year_scaled"
+    ]
+  },
+  "fig_box_before": "output/figs/step5_boxplots_before.png",
+  "fig_box_after": "output/figs/step5_boxplots_after.png",
+  "fig_removal": "output/figs/step5_removed_vs_clipped.png",
+  "fig_box_pair": "output/figs/step5_before_after.png",
+  "step5": {
+    "fences": {
+      "Q1": {
+        "accidents": 123.0,
+        "deaths": 35.0,
+        "injuries": 136.0,
+        "vehicles_involved": 2.0,
+        "speed_limit_kmph": 70.0,
+        "driver_age_median": 29.92
+      },
+      "Q3": {
+        "accidents": 948.25,
+        "deaths": 287.0,
+        "injuries": 922.0,
+        "vehicles_involved": 4.0,
+        "speed_limit_kmph": 100.0,
+        "driver_age_median": 43.72
+      },
+      "IQR": {
+        "accidents": 825.25,
+        "deaths": 252.0,
+        "injuries": 786.0,
+        "vehicles_involved": 2.0,
+        "speed_limit_kmph": 30.0,
+        "driver_age_median": 13.8
+      },
+      "lower": {
+        "accidents": -1114.88,
+        "deaths": -343.0,
+        "injuries": -1043.0,
+        "vehicles_involved": -1.0,
+        "speed_limit_kmph": 25.0,
+        "driver_age_median": 9.22
+      },
+      "upper": {
+        "accidents": 2186.12,
+        "deaths": 665.0,
+        "injuries": 2101.0,
+        "vehicles_involved": 7.0,
+        "speed_limit_kmph": 145.0,
+        "driver_age_median": 64.42
+      },
+      "n_outliers": {
+        "accidents": 1004.0,
+        "deaths": 1001.0,
+        "injuries": 1054.0,
+        "vehicles_involved": 166.0,
+        "speed_limit_kmph": 330.0,
+        "driver_age_median": 167.0
+      },
+      "pct": {
+        "accidents": 9.79,
+        "deaths": 9.76,
+        "injuries": 10.27,
+        "vehicles_involved": 1.62,
+        "speed_limit_kmph": 3.22,
+        "driver_age_median": 1.63
+      }
+    },
+    "zscore_flag": 229,
+    "iqr_flag": 1004,
+    "removed_impossible": {
+      "speed_limit_kmph": 330,
+      "driver_age_median": 154,
+      "vehicles_involved": 110
+    },
+    "clipped": {
+      "accidents": {
+        "n": 183,
+        "lo": 17.0,
+        "hi": 7650.25
+      },
+      "deaths": {
+        "n": 177,
+        "lo": 5.0,
+        "hi": 2208.05
+      },
+      "injuries": {
+        "n": 194,
+        "lo": 16.65,
+        "hi": 7488.15
+      },
+      "vehicles_involved": {
+        "n": 45,
+        "lo": 1.0,
+        "hi": 7.0
+      }
+    },
+    "rows_before": 10260,
+    "rows_after": 9666
+  },
+  "final": {
+    "path": "data/road_accidents_clean_final.csv",
+    "rows": 9666,
+    "cols": 34,
+    "missing": 0,
+    "duplicates": 0,
+    "columns": [
+      "state",
+      "year",
+      "severity",
+      "accidents",
+      "deaths",
+      "injuries",
+      "vehicles_involved",
+      "speed_limit_kmph",
+      "driver_age_median",
+      "severity_code",
+      "road_type_Other Roads",
+      "road_type_State Highway",
+      "weather_Foggy",
+      "weather_Hazy / Dusty",
+      "weather_Rainy",
+      "vehicle_type_Bus",
+      "vehicle_type_Car / Taxi / Van",
+      "vehicle_type_Pedestrian / Cyclist",
+      "vehicle_type_Truck / Lorry",
+      "vehicle_type_Two-Wheeler",
+      "accident_cause_Mobile Phone Use",
+      "accident_cause_Other",
+      "accident_cause_Overspeeding",
+      "accident_cause_Red Light Jumping",
+      "accident_cause_Wrong Side / Lane Indiscipline",
+      "alcohol_involved_Yes",
+      "state_code",
+      "accidents_scaled",
+      "deaths_scaled",
+      "injuries_scaled",
+      "vehicles_involved_scaled",
+      "speed_limit_kmph_scaled",
+      "driver_age_median_scaled",
+      "year_scaled"
+    ]
+  }
+}

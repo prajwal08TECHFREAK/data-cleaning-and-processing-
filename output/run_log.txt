@@ -1,0 +1,201 @@
+
+==============================================================================
+STEP 1 — IMPORT THE DATASET AND EXPLORE BASIC INFO
+==============================================================================
+Loaded data/india_road_accidents_raw.csv
+  rows x columns : 10,465 x 14
+  memory         : 6.8 MB
+
+Per-column profile:
+                     dtype  non_null  n_unique             example
+state               object     10465        60          Tamil Nadu
+year                 int64     10465        19                2008
+road_type           object     10465         6         Other Roads
+vehicle_type        object     10465         8         Two-wheeler
+weather             object      9831        10               Clear
+accident_cause      object      9658         8        Overspeeding
+severity            object     10465         3               Minor
+accidents           object     10465      2735               19543
+deaths              object     10465      1346                3737
+injuries            object     10110      2638               19279
+vehicles_involved  float64     10049        13                 6.0
+speed_limit_kmph    object      9935        13                  50
+driver_age_median   object      9792      9024  29.747119989616916
+alcohol_involved    object      9988         3                  No
+
+Duplicate rows: 205
+
+dtype check: 5 of 6 numeric-looking columns are stored as text -> ['accidents', 'deaths', 'injuries', 'speed_limit_kmph', 'driver_age_median']
+
+describe() after coercion — note the impossible min/max values:
+       accidents    deaths  injuries  vehicles_involved  speed_limit_kmph  driver_age_median
+count   10302.00  10416.00   9961.00           10049.00           9669.00            9470.00
+mean      838.51    249.46    883.39               3.23            102.15              42.35
+std      1467.41    414.92   1527.34               2.83            137.77              69.42
+min         5.00      2.00      6.00               1.00             50.00              -1.00
+25%       120.00     35.00    125.00               2.00             70.00              30.15
+50%       341.50    101.00    362.00               3.00             80.00              36.90
+75%       898.00    283.00    973.00               4.00            100.00              44.00
+max     22120.00   5788.00  27387.00              31.00            999.00             999.00
+
+Category counts BEFORE cleaning: {'state': 60, 'road_type': 6, 'vehicle_type': 8, 'weather': 10}
+
+==============================================================================
+STEP 2 — HANDLE MISSING VALUES (mean / median / imputation)
+==============================================================================
+Missing values after normalising the NA tokens:
+                   missing  percent
+accident_cause        1175    11.23
+driver_age_median      995     9.51
+weather                973     9.30
+speed_limit_kmph       796     7.61
+alcohol_involved       724     6.92
+injuries               504     4.82
+vehicles_involved      416     3.98
+    -> saved output/figs/step2_missing.png
+
+Dropped 205 unrepairable rows (duplicates / missing target) -> 10,260 rows
+
+Mean vs median (the gap tells you the distribution is skewed):
+                     mean  median   skew  gap_%
+accidents          867.21   351.0   4.56  147.1
+deaths             256.24   102.0   4.21  151.2
+injuries           885.48   362.0   5.07  144.6
+vehicles_involved    3.23     3.0   6.14    7.6
+speed_limit_kmph   102.23    80.0   6.17   27.8
+driver_age_median   42.45    36.9  13.16   15.1
+    -> saved output/figs/step2_imputation_methods.png
+
+Variance: raw=4911.91 | mean=4444.61 | median=4447.27 | KNN=4444.61
+
+Imputation applied: median (skewed counts), group-wise median (driver age), mode (categoricals)
+Missing values remaining: 0
+
+==============================================================================
+STEP 3 — CONVERT CATEGORICAL FEATURES INTO NUMERICAL (ENCODING)
+==============================================================================
+Category counts, before -> after merging variant spellings:
+  state             60 ->  30
+  road_type          6 ->   3
+  vehicle_type       8 ->   6
+  weather            8 ->   4
+  accident_cause     6 ->   6
+    -> saved output/figs/step3_categories.png
+
+Ordinal encoding of `severity` (the target): {'Minor': 0, 'Serious': 1, 'Fatal': 2}
+severity_code
+0    0.317
+1    0.477
+2    0.206
+
+One-hot encoding of ['road_type', 'weather', 'vehicle_type', 'accident_cause', 'alcohol_involved']
+  columns: 15 -> 26  (16 dummy columns created)
+  ['road_type_Other Roads', 'road_type_State Highway', 'weather_Foggy', 'weather_Hazy / Dusty', 'weather_Rainy', 'vehicle_type_Bus', 'vehicle_type_Car / Taxi / Van', 'vehicle_type_Pedestrian / Cyclist', 'vehicle_type_Truck / Lorry', 'vehicle_type_Two-Wheeler', 'accident_cause_Mobile Phone Use', 'accident_cause_Other', 'accident_cause_Overspeeding', 'accident_cause_Red Light Jumping', 'accident_cause_Wrong Side / Lane Indiscipline', 'alcohol_involved_Yes']
+
+Label encoding `state` (30 categories) -> `state_code` (integer, for tree models only)
+  {'Andhra Pradesh': 0, 'Arunachal Pradesh': 1, 'Assam': 2, 'Bihar': 3}
+
+==============================================================================
+STEP 4 — NORMALIZE / STANDARDIZE THE NUMERICAL FEATURES
+==============================================================================
+Four representations of `accidents`:
+             raw   standard     minmax     robust      log1p
+count  10260.000  10260.000  10260.000  10260.000  10260.000
+mean     867.207     -0.000      0.039      0.626      5.845
+std     1497.647      1.000      0.068      1.815      1.403
+min        5.000     -0.576      0.000     -0.419      1.792
+25%      123.000     -0.497      0.005     -0.276      4.820
+50%      351.000     -0.345      0.016      0.000      5.864
+75%      948.250      0.054      0.043      0.724      6.856
+max    22120.000     14.191      1.000     26.379     10.004
+
+skew raw    : +4.56
+skew log1p  : +0.01   <- only log changes the SHAPE, the scalers only relabel the axis
+    -> saved output/figs/step4_scaling.png
+
+Distance between two rows, raw units    :  16604.00  (dominated by `accidents`)
+Distance between the same rows, scaled  :     11.18  (both features count)
+
+Feature ranges — the reason scaling is needed:
+                      min      max     span
+accidents             5.0  22120.0  22115.0
+deaths                2.0   5788.0   5786.0
+injuries              6.0  27387.0  27381.0
+vehicles_involved     1.0     31.0     30.0
+speed_limit_kmph     50.0    999.0    949.0
+driver_age_median    -1.0    999.0   1000.0
+year               2005.0   2023.0     18.0
+
+Created 7 standardised columns: ['accidents_scaled', 'deaths_scaled', 'injuries_scaled', 'vehicles_involved_scaled', 'speed_limit_kmph_scaled', 'driver_age_median_scaled', 'year_scaled']
+
+==============================================================================
+STEP 5 — VISUALIZE OUTLIERS USING BOXPLOTS AND REMOVE THEM
+==============================================================================
+    -> saved output/figs/step5_boxplots_before.png
+IQR (Tukey) fences per column:
+                       Q1      Q3     IQR    lower    upper  n_outliers    pct
+accidents          123.00  948.25  825.25 -1114.88  2186.12      1004.0   9.79
+deaths              35.00  287.00  252.00  -343.00   665.00      1001.0   9.76
+injuries           136.00  922.00  786.00 -1043.00  2101.00      1054.0  10.27
+vehicles_involved    2.00    4.00    2.00    -1.00     7.00       166.0   1.62
+speed_limit_kmph    70.00  100.00   30.00    25.00   145.00       330.0   3.22
+driver_age_median   29.92   43.72   13.80     9.22    64.42       167.0   1.63
+
+accidents: z-score |z|>3 flags 229 rows, IQR rule flags 1004 rows
+  -> both flag valid large states; the rule alone cannot decide what is WRONG
+  speed_limit_kmph     removed  330 impossible values (valid range 20-120)
+  driver_age_median    removed  154 impossible values (valid range 16-80)
+  vehicles_involved    removed  110 impossible values (valid range 1-12)
+  accidents            clipped   183 values to [17, 7650]
+  deaths               clipped   177 values to [5, 2208]
+  injuries             clipped   194 values to [17, 7488]
+  vehicles_involved    clipped    45 values to [1, 7]
+
+Rows: 10,260 -> 9,666  (594 removed, 5.79%)
+    -> saved output/figs/step5_boxplots_after.png
+    -> saved output/figs/step5_removed_vs_clipped.png
+    -> saved output/figs/step5_before_after.png
+Recomputed the standardised columns after outlier removal, so the scaling statistics describe the final data.
+
+==============================================================================
+FINAL DATASET
+==============================================================================
+Saved data/road_accidents_clean_final.csv  ->  9,666 rows x 34 columns
+Missing values: 0
+Duplicate rows: 0
+
+Final dtypes:
+state                                             object
+year                                               int64
+severity                                          object
+accidents                                        float64
+deaths                                           float64
+injuries                                         float64
+vehicles_involved                                float64
+speed_limit_kmph                                 float64
+driver_age_median                                float64
+severity_code                                      int64
+road_type_Other Roads                              int64
+road_type_State Highway                            int64
+weather_Foggy                                      int64
+weather_Hazy / Dusty                               int64
+weather_Rainy                                      int64
+vehicle_type_Bus                                   int64
+vehicle_type_Car / Taxi / Van                      int64
+vehicle_type_Pedestrian / Cyclist                  int64
+vehicle_type_Truck / Lorry                         int64
+vehicle_type_Two-Wheeler                           int64
+accident_cause_Mobile Phone Use                    int64
+accident_cause_Other                               int64
+accident_cause_Overspeeding                        int64
+accident_cause_Red Light Jumping                   int64
+accident_cause_Wrong Side / Lane Indiscipline      int64
+alcohol_involved_Yes                               int64
+state_code                                          int8
+accidents_scaled                                 float64
+deaths_scaled                                    float64
+injuries_scaled                                  float64
+vehicles_involved_scaled                         float64
+speed_limit_kmph_scaled                          float64
+driver_age_median_scaled                         float64
+year_scaled                                      float64
